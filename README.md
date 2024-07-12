@@ -20,6 +20,11 @@ Discord Rich Presence for iRacing sessions using python.
 - Customizable settings
 
 
+## Screenshots
+
+<p align="center">
+  <img src="https://github.com/OutdatedDev/iRacingRPC/blob/main/assets/RPCExample.png" width="500" alt="Logo">
+</p>
 
 ## Acknowledgements
 
