@@ -3,9 +3,16 @@ import threading
 from pypresence import Presence
 from pystray import MenuItem as item, Icon, Menu
 from PIL import Image
+import tkinter as tk
+import json
 import irsdk
 
-interval = 10
+# Settings
+with open("settings.json", "r") as json_file:
+    settings = json.load(json_file)
+interval = settings.get("updateInterval", 10)
+display_idle = settings.get("displayIdle", True)
+display_github = settings.get("displayGithub", True)
 stop_event = threading.Event()
 
 # iRacing SDK
@@ -13,56 +20,57 @@ irsdk_obj = irsdk.IRSDK()
 irsdk_obj.startup()
 
 # Discord RPC setup
-client_id = '1260920089486692413'
+client_id = '1260920089486692413' # Don't change this unless you have your own application set up
 RPC = Presence(client_id)
 RPC.connect()
-
-# States and flags
-def get_session_state(state_code):
-    states = {
-        0: "Idle",
-        1: "Getting in car",
-        2: "Warmup",
-        3: "Parade Laps",
-        4: "Racing",
-        5: "Checkered Flag",
-        6: "Cooldown"
-    }
-    return states.get(state_code, "Unknown")
-
-def get_session_flags(flag_code):
-    flags = {
-        0: "Green Flag",
-        1: "Yellow Flag",
-        2: "Red Flag"
-    }
-    return flags.get(flag_code, "Green Flag") # Default to Green Flag if unknown
 
 # Updating the RPC
 def update_presence():
     while not stop_event.is_set():
         try:
             if irsdk_obj.is_initialized and irsdk_obj.is_connected:
-                state_code = irsdk_obj['SessionState']
-                state = get_session_state(state_code)
+                state = irsdk_obj['WeekendInfo']['EventType']
                 lap_num = irsdk_obj['Lap']
+                carname = irsdk_obj['DriverInfo']['Drivers'][irsdk_obj['DriverInfo']['DriverCarIdx']]['CarScreenNameShort']
                 total_laps = irsdk_obj['SessionLaps']
+                elapsed_time = irsdk_obj['SessionTime']
+                total_time = irsdk_obj['SessionTimeRemain']
                 position = irsdk_obj['Position'] or "N/A"
-                flags_code = int(irsdk_obj['SessionFlags'])
-                flags = get_session_flags(flags_code)
+                track = irsdk_obj['WeekendInfo']['TrackDisplayName']
+
+                if total_laps in [None, "None", 0]:
+                    if total_time in [None, "None", 604800] or state in ["Test", "Practice"]:
+                        elapsed_time = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
+                        statetext = f"{elapsed_time} | {lap_num} laps | {carname}"
+                    else:
+                        elapsed_time = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
+                        total_time = time.strftime('%H:%M:%S', time.gmtime(total_time))
+                        statetext = f"P{position} | {elapsed_time} of {total_time} | {carname}"
+                else:
+                    statetext = f"P{position} | {lap_num} of {total_laps} | {carname}"
 
                 RPC.update(
-                    state=f"{position} | {lap_num} of {total_laps} | {flags}",
-                    details=state,
+                    state=statetext,
+                    details=f"{state} | {track}",
                     large_image="iracing",
                     large_text="iRacing"
                 )
-            else: # if iracing is not running, will display idle
-                RPC.update(
-                    details="Idle",
-                    large_image="iracing",
-                    large_text="iRacing"
-                )
+
+            elif display_idle:
+                if display_github:
+                    RPC.update(
+                        details="Idle",
+                        large_image="iracing",
+                        large_text="https://github.com/OutdatedDev/iRacingRPC",
+                    )
+                else:
+                    RPC.update(
+                        details="Idle",
+                        large_image="iracing",
+                        large_text="iRacing"
+                    )
+            else:
+                RPC.clear()
         except KeyError as e:
             print(f"Data not available from iRacing: {e}")
         except Exception as e:
@@ -83,21 +91,55 @@ def on_quit(icon, item):
     stop_event.set()
     RPC.close()
     icon.stop()
+    print("RPC Closing")
 
 def set_interval(new_interval):
     global interval
     interval = new_interval
 
+def settings_window(): 
+    def settings_thread():
+        settings = tk.Tk()
+        settings.title("iRacing RPC Settings")
+        settings.iconbitmap("main.ico")
+        settings.geometry("300x200")
+        settings.resizable(False, False)
+        
+        interval_label = tk.Label(settings, text="Update interval (seconds):")
+        interval_label.pack()
+        interval_entry = tk.Entry(settings)
+        interval_entry.insert(0, interval)
+        interval_entry.pack()
+
+        display_idle_var = tk.BooleanVar(value=display_idle)
+        display_github_var = tk.BooleanVar(value=display_github)
+
+        display_idle_checkbutton = tk.Checkbutton(settings, text="Display even when idle", variable=display_idle_var)
+        display_idle_checkbutton.pack()
+
+        display_github_checkbutton = tk.Checkbutton(settings, text="Display GitHub Link", variable=display_github_var)
+        display_github_checkbutton.pack()
+
+        def save_settings():
+            global interval, display_idle, display_github
+            interval = int(interval_entry.get())
+            display_idle = display_idle_var.get()
+            display_github = display_github_var.get()
+
+        save_button = tk.Button(settings, text="Save", command=save_settings)
+        save_button.pack()
+
+        settings.mainloop()
+
+    threading.Thread(target=settings_thread).start()
+
 icon = Icon("iRacingRP", Image.open("main.ico"), "iRacing Discord Rich Presence")
-icon.menu = Menu(
-    item('Update intervals', Menu(
-        item('1 second', lambda: set_interval(1)),
-        item('5 seconds', lambda: set_interval(5)),
-        item('10 seconds', lambda: set_interval(10)),
-        item('15 seconds', lambda: set_interval(15))
-    )),
+menu_items = [
+    item('Settings', lambda: settings_window()),
     item('Quit', on_quit)
-)
+]
+
+icon.menu = Menu(*menu_items)
 
 # Threads
 presence_thread = threading.Thread(target=update_presence)
@@ -108,4 +150,5 @@ status_thread.daemon = True
 status_thread.start()
 
 # Run
+print("iRacing Discord Rich Presence is running")
 icon.run()
