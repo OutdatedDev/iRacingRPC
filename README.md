@@ -15,7 +15,7 @@ Discord Rich Presence for iRacing sessions using python.
 
 ## Features
 
-- Display Session State, position, laps and current flag.
+- Display current session, position, laps, current track name and car name.
 - Lightweight
 - Customizable settings
 
@@ -23,7 +23,9 @@ Discord Rich Presence for iRacing sessions using python.
 ## Screenshots
 
 <p align="center">
-  <img src="https://github.com/OutdatedDev/iRacingRPC/blob/main/assets/RPCExample.png" width="500" alt="Logo">
+  <img src="https://github.com/OutdatedDev/iRacingRPC/blob/main/assets/RPCExample.png" width="350" alt="Screenshot of idle status">
+  <br>
+  <img src="https://github.com/OutdatedDev/iRacingRPC/blob/main/assets/practicess.png" width="350" alt="Screenshot of practice status">
 </p>
 
 ## Acknowledgements
