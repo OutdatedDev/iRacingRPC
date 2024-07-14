@@ -13,6 +13,8 @@ Thank you for considering contributing to iRacingRPC. It's people like you that 
 - Describe the bug in as much detail as possible, including steps to reproduce it, the expected outcome, and the actual outcome.
 - Include screenshots if relevant.
 
+- Trying to find bugs? Feel free to try to break absolutely everything without modifying the code itself.
+
 ## Suggesting Enhancements
 
 - Use the issue tracker to suggest enhancements.
