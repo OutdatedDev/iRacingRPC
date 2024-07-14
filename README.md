@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/OutdatedDev/iRacingRPC/blob/11d070f6009c6d816ee22cc5be5dcb2390210a3f/assets/logo.png" width="150" alt="Logo">
+  <img src="./assets/logo.png" width="150" alt="Logo">
 </p>
 <p align="center">
   <a href="https://opensource.org/licenses/GPL-3.0">
@@ -24,14 +24,20 @@ Discord Rich Presence for iRacing sessions using python.
 <table>
   <tr>
     <td align="center">
-      <img src="https://github.com/OutdatedDev/iRacingRPC/blob/main/assets/RPCExample.png" width="350" alt="Screenshot of idle status">
+      <img src="./assets/RPCExample.png" width="350" alt="Screenshot of idle status">
       <br>
-      <em>Idle Status</em>
+      <em>Idle</em>
     </td>
     <td align="center">
-      <img src="https://github.com/OutdatedDev/iRacingRPC/blob/main/assets/practicess.png" width="350" alt="Screenshot of practice status">
+      <img src="./assets/practicess.png" width="350" alt="Screenshot of practice status">
       <br>
-      <em>Practice Status</em>
+      <em>Practice</em>
+    </td>
+  </tr>
+      <td align="center">
+      <img src="./assets/race.png" width="350" alt="Screenshot of racing status">
+      <br>
+      <em>Racing</em>
     </td>
   </tr>
 </table>
