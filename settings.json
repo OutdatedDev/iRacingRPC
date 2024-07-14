@@ -1,5 +1,5 @@
 {
     "updateInterval": 1,
-    "displayIdle": false,
+    "displayIdle": true,
     "displayGithub": true
 }
