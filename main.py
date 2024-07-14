@@ -31,14 +31,21 @@ def update_presence():
             if irsdk_obj.is_initialized and irsdk_obj.is_connected:
                 state = irsdk_obj['WeekendInfo']['EventType']
                 lap_num = irsdk_obj['Lap']
-                carname = irsdk_obj['DriverInfo']['Drivers'][irsdk_obj['DriverInfo']['DriverCarIdx']]['CarScreenNameShort']
-                total_laps = irsdk_obj['SessionLaps']
+                car_idx = irsdk_obj['DriverInfo']['DriverCarIdx']
+                carname = irsdk_obj['DriverInfo']['Drivers'][car_idx]['CarScreenNameShort']
+                
+                session_num = irsdk_obj['SessionNum']
+                session_info = irsdk_obj['SessionInfo']['Sessions'][session_num]
+                sessiontype = session_info['SessionType']
+                total_laps = session_info['SessionLaps']
+                if total_laps in ["unlimited", None, "None", 0]:
+                    total_laps = None
                 elapsed_time = irsdk_obj['SessionTime']
                 total_time = irsdk_obj['SessionTimeRemain']
-                position = irsdk_obj['PlayerCarPosition'] or "N/A"
+                position = irsdk_obj['PlayerCarPosition'] or "--"
                 track = irsdk_obj['WeekendInfo']['TrackDisplayName']
-
-                if total_laps in [None, "None", 0]:
+                
+                if total_laps is None:
                     if total_time in [None, "None", 604800] or state in ["Test", "Practice"]:
                         elapsed_time = time.strftime('%H:%M:%S', time.gmtime(elapsed_time))
                         statetext = f"{elapsed_time} | {lap_num} laps | {carname}"
@@ -49,26 +56,29 @@ def update_presence():
                 else:
                     statetext = f"P{position} | {lap_num} of {total_laps} | {carname}"
 
+                if display_github:
+                    largetexttext = "https://github.com/OutdatedDev/iRacingRPC"
+                else:
+                    largetexttext = "iRacing"
+
+                if sessiontype == state:
+                    details = f"{state} | {track}"
+                else:
+                    details = f"{state} - {sessiontype} | {track}"
+
                 RPC.update(
                     state=statetext,
-                    details=f"{state} | {track}",
+                    details=details,
                     large_image="iracing",
-                    large_text="iRacing"
+                    large_text=largetexttext
+                )
+            elif display_idle:
+                RPC.update(
+                     details="Idle",
+                    large_image="iracing",
+                    large_text=largetexttext,
                 )
 
-            elif display_idle:
-                if display_github:
-                    RPC.update(
-                        details="Idle",
-                        large_image="iracing",
-                        large_text="https://github.com/OutdatedDev/iRacingRPC",
-                    )
-                else:
-                    RPC.update(
-                        details="Idle",
-                        large_image="iracing",
-                        large_text="iRacing"
-                    )
             else:
                 RPC.clear()
         except KeyError as e:
