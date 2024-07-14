@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/OutdatedDev/iRacingRPC/blob/11d070f6009c6d816ee22cc5be5dcb2390210a3f/assets/logo.png" width="125" alt="Logo">
+  <img src="./assets/logo.png" width="125" alt="Logo">
 </p>
 
 # Contributing to iRacingRPC

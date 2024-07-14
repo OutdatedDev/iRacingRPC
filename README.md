@@ -16,6 +16,7 @@ Discord Rich Presence for iRacing sessions using python.
 ## Features
 
 - Display current session, position, laps, current track name and car name.
+- Easy for anyone to use
 - Lightweight
 - Customizable settings
 
@@ -53,6 +54,10 @@ Discord Rich Presence for iRacing sessions using python.
 4. Install the required dependencies ```pip install -r requirements.txt```
 
 5. Run the application ```py main.py```
+
+## Contributing
+
+For information on contributing, please read [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Acknowledgements
 
