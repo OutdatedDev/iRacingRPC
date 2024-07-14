@@ -35,7 +35,7 @@ def update_presence():
                 total_laps = irsdk_obj['SessionLaps']
                 elapsed_time = irsdk_obj['SessionTime']
                 total_time = irsdk_obj['SessionTimeRemain']
-                position = irsdk_obj['Position'] or "N/A"
+                position = irsdk_obj['PlayerCarPosition'] or "N/A"
                 track = irsdk_obj['WeekendInfo']['TrackDisplayName']
 
                 if total_laps in [None, "None", 0]:
