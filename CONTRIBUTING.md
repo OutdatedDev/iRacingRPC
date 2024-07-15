@@ -6,6 +6,7 @@
 
 Thank you for considering contributing to iRacingRPC. It's people like you that make iRacingRPC such a great tool. This guide should cover the basics of contribution guidelines.
 
+The iRacing telemetry data can be found [here](./assets/iRacingTelemetry.pdf) in PDF format.
 
 ## Reporting Bugs
 
