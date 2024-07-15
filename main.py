@@ -49,10 +49,11 @@ def update_presence():
                 elapsed_time = irsdk_obj["SessionTime"]
                 total_time = irsdk_obj["SessionTimeRemain"]
                 
-                if sessiontype == "Qualifying" and initial_total_time is None:
-                    initial_total_time = total_time
+                if sessiontype != "Race":  # Check for timed sessions
+                    if initial_total_time is None:
+                        initial_total_time = total_time
 
-                if sessiontype != "Qualifying":
+                if sessiontype == "Race":
                     initial_total_time = None
 
                 display_total_time = initial_total_time if initial_total_time else total_time
