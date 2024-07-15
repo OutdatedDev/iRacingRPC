@@ -25,9 +25,12 @@ client_id = "1260920089486692413"  # Don't change this unless you have your own 
 RPC = Presence(client_id)
 RPC.connect()
 
+initial_total_time = None
 
 # Updating the RPC
 def update_presence():
+    global initial_total_time
+    
     while not stop_event.is_set():
         try:
             if irsdk_obj.is_initialized and irsdk_obj.is_connected:
@@ -45,6 +48,11 @@ def update_presence():
                     total_laps = None
                 elapsed_time = irsdk_obj["SessionTime"]
                 total_time = irsdk_obj["SessionTimeRemain"]
+                
+                if total_time:
+                    initial_total_time = total_time + elapsed_time
+
+                display_total_time = initial_total_time if initial_total_time else total_time
                 position = irsdk_obj["PlayerCarPosition"] or "--"
                 track = irsdk_obj["WeekendInfo"]["TrackDisplayName"]
 
@@ -61,9 +69,9 @@ def update_presence():
                         elapsed_time = time.strftime(
                             "%H:%M:%S", time.gmtime(elapsed_time)
                         )
-                        total_time = time.strftime("%H:%M:%S", time.gmtime(total_time))
+                        display_total_time = time.strftime("%H:%M:%S", time.gmtime(display_total_time))
                         statetext = (
-                            f"P{position} | {elapsed_time} of {total_time} | {carname}"
+                            f"P{position} | {elapsed_time} of {display_total_time} | {carname}"
                         )
                 else:
                     statetext = f"P{position} | {lap_num} of {total_laps} | {carname}"
