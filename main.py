@@ -49,12 +49,8 @@ def update_presence():
                 elapsed_time = irsdk_obj["SessionTime"]
                 total_time = irsdk_obj["SessionTimeRemain"]
                 
-                if sessiontype != "Race":  # Check for timed sessions
-                    if initial_total_time is None:
-                        initial_total_time = total_time
-
-                if sessiontype == "Race":
-                    initial_total_time = None
+                if total_time:
+                    initial_total_time = total_time + elapsed_time
 
                 display_total_time = initial_total_time if initial_total_time else total_time
                 position = irsdk_obj["PlayerCarPosition"] or "--"
