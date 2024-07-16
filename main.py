@@ -5,15 +5,37 @@ from pystray import MenuItem as item, Icon, Menu
 from PIL import Image
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
 import json
 import irsdk
 
+# Initialize default settings
+interval = 1
+display_idle = True
+display_github = True
+
 # Settings
-with open("settings.json", "r") as json_file:
-    settings = json.load(json_file)
-interval = settings.get("updateInterval", 10)
-display_idle = settings.get("displayIdle", True)
-display_github = settings.get("displayGithub", True)
+try:
+    settings_file = "settings.json"
+    with open(settings_file, "r") as json_file:
+        settings = json.load(json_file)
+    interval = settings.get("updateInterval", interval)
+    display_idle = settings.get("displayIdle", display_idle)
+    display_github = settings.get("displayGithub", display_github)
+except FileNotFoundError:  # create new settings.json
+    with open(settings_file, "w") as json_file:
+        settings = {
+            "updateInterval": interval,
+            "displayIdle": display_idle,
+            "displayGithub": display_github,
+        }
+        json.dump(settings, json_file, indent=4)
+        print(
+            "Settings file not found, creating new settings file with default settings."
+        )
+except Exception as e:
+    print(f"Error loading settings: {e}, resorting to default settings")
+
 stop_event = threading.Event()
 
 # iRacing SDK
@@ -27,10 +49,11 @@ RPC.connect()
 
 initial_total_time = None
 
+
 # Updating the RPC
 def update_presence():
     global initial_total_time
-    
+
     while not stop_event.is_set():
         try:
             if irsdk_obj.is_initialized and irsdk_obj.is_connected:
@@ -48,11 +71,13 @@ def update_presence():
                     total_laps = None
                 elapsed_time = irsdk_obj["SessionTime"]
                 total_time = irsdk_obj["SessionTimeRemain"]
-                
+
                 if total_time:
                     initial_total_time = total_time + elapsed_time
 
-                display_total_time = initial_total_time if initial_total_time else total_time
+                display_total_time = (
+                    initial_total_time if initial_total_time else total_time
+                )
                 position = irsdk_obj["PlayerCarPosition"] or "--"
                 track = irsdk_obj["WeekendInfo"]["TrackDisplayName"]
 
@@ -69,10 +94,10 @@ def update_presence():
                         elapsed_time = time.strftime(
                             "%H:%M:%S", time.gmtime(elapsed_time)
                         )
-                        display_total_time = time.strftime("%H:%M:%S", time.gmtime(display_total_time))
-                        statetext = (
-                            f"P{position} | {elapsed_time} of {display_total_time} | {carname}"
+                        display_total_time = time.strftime(
+                            "%H:%M:%S", time.gmtime(display_total_time)
                         )
+                        statetext = f"P{position} | {elapsed_time} of {display_total_time} | {carname}"
                 else:
                     statetext = f"P{position} | {lap_num} of {total_laps} | {carname}"
 
@@ -100,7 +125,12 @@ def update_presence():
                 RPC.update(
                     details="Idle",
                     large_image="iracing",
-                    large_text=largetexttext,
+                    buttons=[
+                        {
+                            "label": "View on GitHub",
+                            "url": "https://github.com/Outdateddev/iRacingRPC",
+                        }
+                    ],
                 )
 
             else:
@@ -140,37 +170,57 @@ def settings_window():
         settings = tk.Tk()
         settings.title("iRacing RPC Settings")
         settings.iconbitmap("main.ico")
-        settings.geometry("300x200")
+        settings.geometry("400x300")
         settings.resizable(False, False)
 
-        interval_label = tk.Label(settings, text="Update interval (seconds):")
-        interval_label.pack()
-        interval_entry = tk.Entry(settings)
+        # Styling
+        style = ttk.Style()
+        style.configure("TLabel", font=("Segoe UI", 10))
+        style.configure("TButton", font=("Segoe UI", 10))
+        style.configure("TEntry", font=("Segoe UI", 10))
+        style.configure("TCheckbutton", font=("Segoe UI", 10))
+
+        settings_frame = ttk.Frame(settings, padding=20)
+        settings_frame.pack(fill=tk.BOTH, expand=True)
+
+        interval_label = ttk.Label(settings_frame, text="Update interval (seconds):")
+        interval_label.pack(pady=5)
+        interval_entry = ttk.Entry(settings_frame)
         interval_entry.insert(0, interval)
-        interval_entry.pack()
+        interval_entry.pack(pady=5)
 
         display_idle_var = tk.BooleanVar(value=display_idle)
         display_github_var = tk.BooleanVar(value=display_github)
 
-        display_idle_checkbutton = tk.Checkbutton(
-            settings, text="Display even when idle", variable=display_idle_var
+        display_idle_checkbutton = ttk.Checkbutton(
+            settings_frame, text="Display even when idle", variable=display_idle_var
         )
-        display_idle_checkbutton.pack()
+        display_idle_checkbutton.pack(pady=5)
 
-        display_github_checkbutton = tk.Checkbutton(
-            settings, text="Display GitHub Link", variable=display_github_var
+        display_github_checkbutton = ttk.Checkbutton(
+            settings_frame, text="Display GitHub Link", variable=display_github_var
         )
-        display_github_checkbutton.pack()
+        display_github_checkbutton.pack(pady=5)
 
         def save_settings():
-            global interval, display_idle, display_github
-            interval = int(interval_entry.get())
-            display_idle = display_idle_var.get()
-            display_github = display_github_var.get()
-            tk.messagebox.showinfo("Success", "Settings saved successfully!")
+            try:
+                global interval, display_idle, display_github
+                interval = int(interval_entry.get())
+                display_idle = display_idle_var.get()
+                display_github = display_github_var.get()
+                new_settings = {
+                    "updateInterval": interval,
+                    "displayIdle": display_idle,
+                    "displayGithub": display_github,
+                }
+                with open(settings_file, "w") as json_file:
+                    json.dump(new_settings, json_file, indent=4)
+                tk.messagebox.showinfo("Success", "Settings saved successfully!")
+            except Exception as e:
+                tk.messagebox.showerror("Error", f"Error saving settings: {e}")
 
-        save_button = tk.Button(settings, text="Save", command=save_settings)
-        save_button.pack()
+        save_button = ttk.Button(settings_frame, text="Save", command=save_settings)
+        save_button.pack(pady=20)
         settings.mainloop()
 
     threading.Thread(target=settings_thread).start()
