@@ -2,14 +2,11 @@
   <img src="./assets/logo.png" width="150" alt="Logo">
 </p>
 
-<center>
-
 [![iRacingRPC](https://img.shields.io/static/v1?label=GitHub&message=iRacingRPC&color=blue&logo=github&style=flat-square)](https://github.com/OutdatedDev/iRacingRPC "View GitHub repo")
 [![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg?style=flat-square)](https://opensource.org/licenses/GPL-3.0 "View the license")
 ![GitHub Repo stars](https://img.shields.io/github/stars/outdateddev/iracingrpc?style=flat-square&color=lightyellow)
 ![GitHub contributors](https://img.shields.io/github/contributors/outdateddev/iRacingRPC?style=flat-square)
 
-</center>
 
 # iRacing Rich Presence
 
